@@ -15,7 +15,18 @@ var racers: Array[Node3D] = []
 var racer_states: Dictionary = {}
 
 func _ready() -> void:
-	pass
+	# Auto-discover race components within the scene tree
+	var root = get_tree().current_scene
+	_find_race_nodes(root)
+
+func _find_race_nodes(node: Node) -> void:
+	if node is Checkpoint:
+		register_checkpoint(node)
+	elif node is StartFinishLine:
+		register_start_finish(node)
+		
+	for child in node.get_children():
+		_find_race_nodes(child)
 
 func register_racer(racer: Node3D) -> void:
 	if not racers.has(racer):

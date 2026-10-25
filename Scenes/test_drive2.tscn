@@ -65,6 +65,7 @@ sky = SubResource("Sky_k8crb")
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0)
 
 [node name="floor-small-square" type="MeshInstance3D" parent="floor-small-square2" unique_id=2103014893]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.01748806, -0.0019667328, 0.010778079)
 mesh = SubResource("ArrayMesh_r4v8y")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="floor-small-square2/floor-small-square" unique_id=308015844]

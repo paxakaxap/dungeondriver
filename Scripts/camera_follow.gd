@@ -7,9 +7,18 @@ extends Camera3D
 var target: Node3D
 
 func _ready() -> void:
-	if target_path:
-		target = get_node(target_path)
-
+	# Try to find the target if not set via NodePath or if it failed
+	if not target and target_path:
+		target = get_node_or_null(target_path)
+	
+	# If still no target, try to find the car after it has been spawned
+	if not target:
+		await get_tree().process_frame
+		var scene = get_tree().current_scene
+		for node in scene.get_children():
+			if node.name.begins_with("car_base_a"):
+				target = node
+				break
 func _physics_process(delta: float) -> void:
 	if not target:
 		return
