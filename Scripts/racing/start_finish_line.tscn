@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cq7x052gp8o21"]
 
 [ext_resource type="Script" uid="uid://bc3k3glr8ap1c" path="res://Scripts/racing/start_finish_line.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://778do0ocpxga" path="res://Art/Outsource/KenneyCars/cone.glb" id="2_semps"]
+[ext_resource type="PackedScene" uid="uid://dlaa5wrddl3bt" path="res://Art/Outsource/KenneyPrototype/flag.glb" id="2_semps"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_sfl"]
 size = Vector3(10, 5, 1)
@@ -20,8 +20,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 0)
 [node name="SpawnMarker2" type="Marker3D" parent="SpawnGrid" unique_id=1976771672]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0)
 
-[node name="cone2" parent="." unique_id=500336549 instance=ExtResource("2_semps")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 0)
+[node name="flag2" parent="." unique_id=341520745 instance=ExtResource("2_semps")]
+transform = Transform3D(0, 0, -1.0000001, 0, 1, 0, 1.0000001, 0, 0, -5, 0, 0)
 
-[node name="cone3" parent="." unique_id=1683462415 instance=ExtResource("2_semps")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 0)
+[node name="flag3" parent="." unique_id=759186165 instance=ExtResource("2_semps")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 5, 0, 0)

@@ -33,17 +33,3 @@ func _gather_player_input() -> void:
 		brake_input = brake_force
 	else:
 		brake_input = 0.0
-
-func on_checkpoint_entered(checkpoint: Area3D) -> void:
-	var rm = Engine.get_main_loop().root.get_node_or_null("/root/RaceManager")
-	if rm:
-		rm.on_racer_entered_checkpoint(self, checkpoint)
-
-func on_start_finish_entered(sfl: Area3D) -> void:
-	var rm = Engine.get_main_loop().root.get_node_or_null("/root/RaceManager")
-	if rm:
-		rm.on_racer_entered_start_finish(self)
-	var speed_ms = linear_velocity.length()
-	var speed_kmh = int(speed_ms * 3.6)
-	if speed_label:
-		speed_label.text = str(speed_kmh) + " km/h"

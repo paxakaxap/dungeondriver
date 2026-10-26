@@ -1,12 +1,19 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://bqy648ibp4dsc"]
 
-[ext_resource type="Script" path="res://Scripts/racing/checkpoint.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://c1m6kk41as8jy" path="res://Scripts/racing/checkpoint.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://778do0ocpxga" path="res://Art/Outsource/KenneyCars/cone.glb" id="2_ahc0k"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_cp"]
-size = Vector3(10.0, 5.0, 1.0)
+size = Vector3(10, 5, 1)
 
-[node name="Checkpoint" type="Area3D"]
+[node name="Checkpoint" type="Area3D" unique_id=370029251]
 script = ExtResource("1_script")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=736747536]
 shape = SubResource("BoxShape3D_cp")
+
+[node name="cone2" parent="." unique_id=493497455 instance=ExtResource("2_ahc0k")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 0)
+
+[node name="cone3" parent="." unique_id=1764906880 instance=ExtResource("2_ahc0k")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 0)
