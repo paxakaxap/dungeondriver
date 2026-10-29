@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://cq7x052gp8o21" path="res://Scripts/racing/start_finish_line.tscn" id="3_tan6s"]
 [ext_resource type="PackedScene" uid="uid://bqy648ibp4dsc" path="res://Scripts/racing/checkpoint.tscn" id="4_t7y5q"]
 [ext_resource type="Script" uid="uid://cpej4s3b3wgck" path="res://Scripts/camera_follow.gd" id="5_tan6s"]
+[ext_resource type="PackedScene" path="res://Scripts/racing/race_hud.tscn" id="6_hud"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_esgwg"]
 resource_name = "colormap"
@@ -101,3 +102,5 @@ transform = Transform3D(0.6084441, 0, 0.79359674, 0, 1, 0, -0.79359674, 0, 0.608
 transform = Transform3D(1, -3.0051904e-08, 1.6951799e-07, -3.0051904e-08, 0.93905985, 0.34375373, -1.6951799e-07, -0.34375373, 0.93905985, 0, 1.5116602, 2.7980125)
 script = ExtResource("5_tan6s")
 target_path = NodePath("../VehicleBody3D")
+
+[node name="RaceHUD" parent="." instance=ExtResource("6_hud")]
