@@ -15,7 +15,7 @@ Permanent memory for AI coding sessions. Read this before changing code.
 | Project name | `DungeonDriverWeb` |
 | Engine | **Godot 4.7.2** |
 | Renderer | `gl_compatibility` (both default and mobile) — web export target |
-| Main scene | `res://Scenes/race_template.tscn` (`uid://0txiole8x7i8`) |
+| Main scene | `res://Scenes/race_menu.tscn` (quick-race menu); the race scene it loads is `res://Scenes/race_session.tscn` (`uid://0txiole8x7i8`) |
 | Autoloads | **none created yet** — allowed in the future when a real need appears |
 | Physics | 60 ticks/s, 8 max steps/frame |
 | Scene format | text `.tscn`, `format=4`; `.gd.uid` sidecar files are committed |
@@ -25,7 +25,7 @@ Permanent memory for AI coding sessions. Read this before changing code.
 ## 2. Folder map + placement rules
 
 ```
-Scenes/            race_template.tscn (main), test_drive2.tscn (manual sandbox)
+Scenes/            race_menu.tscn (main), race_session.tscn (race scene), race_template.tscn (compat shim), test_drive2.tscn (manual sandbox)
 Prefabs/           car_base_a.tscn
 Scripts/           car_drive.gd, camera_follow.gd, speedometer.tscn
 Scripts/racing/    race_manager.gd, race_hud.gd+.tscn, checkpoint.gd+.tscn, start_finish_line.gd+.tscn
@@ -65,15 +65,23 @@ RaceManager (Node — scene-local, one per race scene, dies with it)
 
 | Path | Type | Responsibility / note |
 |---|---|---|
-| `Scripts/racing/race_manager.gd` | `Node` | Race session: discovery, wiring, spawning, lap logic, standings, race clock. Exports: `total_laps=3`, `car_scene=car_base_a.tscn`; public `get_player()`, `get_player_progress()`, `elapsed_time`, `race_running`, `finish_time`, `hud` |
+| `Scripts/racing/race_manager.gd` | `Node` | Race session: discovery, wiring, spawning, lap logic, standings, race clock, countdown. `begin(config, racers_parent)` starts everything — nothing self-starts in `_ready`; public `get_player()`, `get_player_progress()`, `elapsed_time`, `race_running`, `finish_time`, `hud`; signal `racers_spawned` |
 | `Scripts/racing/race_hud.gd` + `.tscn` | `CanvasLayer`, `class_name RaceHUD` | Race HUD overlay (`layer=1`): clock top-left, `Lap X/X` + `Checkpoints: X/X` top-right, centered `Finish` banner. Discovered by type; state read from `RaceManager` via `bind()` |
 | `Scripts/racing/checkpoint.gd` + `.tscn` | `Area3D`, `class_name Checkpoint` | `@export checkpoint_index:int` (0-based, contiguity required) |
 | `Scripts/racing/start_finish_line.gd` + `.tscn` | `Area3D`, `class_name StartFinishLine` | `@export spawn_markers:Array[Marker3D]` (front→back; index 0 = player) |
 | `Scripts/car_drive.gd` | `VehicleBody3D` | Steering/throttle/brake, speedometer text. Exports: `max_engine_force=1200`, `max_steering_angle=0.6`, `brake_force=15`, `speed_label:Label` |
 | `Scripts/camera_follow.gd` | `Camera3D` | Chase cam. Exports: `target_path`, `follow_speed=5`, `offset=(0,2,5)` |
-| `Scripts/speedometer.tscn` | `Control` | Car HUD; expose `CanvasLayer/SpeedLabel` (wired from car prefab) |
+| `Scripts/speedometer.tscn` | `Control` | Car HUD, wired from the car prefab as `Speedometer/CanvasLayer/SpeedLabel`. The node *named* `CanvasLayer` is a plain `Node`, not a `CanvasLayer` — never write `is CanvasLayer` checks against it. Non-player cars delete the whole `Speedometer` node, because stacked copies all anchor to the same screen corner |
 | `Prefabs/car_base_a.tscn` | `VehicleBody3D` | Root has `car_drive.gd`; BoxShape 2.55×0.90×1.30; visuals `sedan-sports/body`+`spoiler`; wheels `VehicleWheel3D_BR/BL/FL/FR`; child `Speedometer`; `speed_label = NodePath("Speedometer/CanvasLayer/SpeedLabel")` |
-| `Scenes/race_template.tscn` | `Node3D` `race_root` | floor (scaled 100) + WorldEnvironment/DirectionalLight + `RaceManager` + `StartFinishLine`(1 `Marker3D`) + `Checkpoint`(0) + `Checkpoint2`(1) + `Camera3D` + `RaceHUD` (instance of `race_hud.tscn`) |
+| `Scenes/race_session.tscn` | `Node3D` `race_root` + `race_session.gd` | The race scene (`uid://0txiole8x7i8`): `WorldEnvironment`/`DirectionalLight3D`, `VenueHolder`, `TrackHolder`, `Racers`, `RaceManager`, `Camera3D`, `RaceHUD`. Holds **no geometry** — venue + track are instanced from `RaceConfig`. Loaded by the menu; `Scenes/race_template.tscn` is now a one-node compat shim instancing it |
+| `Scenes/race_menu.tscn` + `Scripts/racing/race_menu.gd` | `Control` | Quick-race menu (main scene): venue/track/race-type/laps/opponents, hand-written track list in `_tracks`. Stays the current scene and hides while a race runs; adds the race scene as a sibling of the viewport root and returns on `race_closed` |
+| `Scripts/racing/race_config.gd` | `Resource`, `class_name RaceConfig` | One race's data: `venue_scene`, `track_scene`, `race_type` (CIRCUIT/SPRINT/TIME_ATTACK), `total_laps`, `opponent_count`, player/opponent car scenes, `countdown_seconds`; `racer_count()`, `race_type_name()`, `is_sprint()`, `validate()` |
+| `Scripts/racing/race_session.gd` | `Node3D`, `class_name RaceSession` | Instances venue then track into the holders, calls `race_manager.begin(config, Racers)`, points the camera at the player on `racers_spawned`, `close()` (and `ui_cancel`) frees the race; `_dev_config()` keeps the scene runnable standalone |
+| `Prefabs/car_opponent_a.tscn` | `VehicleBody3D` | Inherits `car_base_a.tscn` (same model for now); used for every opponent, its speedometer is hidden |
+| `Scenes/Venues/test_floor.tscn` | `Node3D` | Dev venue: scenery + collision only, zero logic |
+| `Scenes/Tracks/test_floor_a.tscn` / `_b.tscn` | `Node3D` | Lap routes: `StartFinishLine` with 8 `GridSlot*` markers + 3 numbered `Checkpoint*` gates; zero logic |
+| `Scenes/Tracks/test_floor_sprint.tscn` | `Node3D` | Sprint route: `StartFinishLine` (grid only) + 2 checkpoints + a `FinishLine` gate; zero logic |
+| `Scripts/racing/finish_line.gd` + `.tscn` | `Area3D`, `class_name FinishLine` | Sprint-only finish gate: 12x4x2 box at y+2 plus two flag props, no exports, no state |
 | `Scenes/test_drive2.tscn` | `Node3D` | Scratch sandbox: `car_base_a` instance, Kenney props, own camera. Not shipped content |
 
 ---
@@ -82,15 +90,19 @@ RaceManager (Node — scene-local, one per race scene, dies with it)
 
 `RaceManager` signals: `race_started`, `checkpoint_reached(racer:Node3D, index:int)`, `lap_completed(racer:Node3D, lap:int)`, `race_finished(standings:Array)`.
 
-`RaceManager` public: `spawn_racers()`, `register_racer(racer)`, `unregister_racer(racer)`; state fields `checkpoints`, `start_finish_line`, `racers`, `racer_states`.
+`RaceManager` public: `begin(config, racers_parent)`, `spawn_racers()`, `register_racer(racer)`, `unregister_racer(racer)`; state fields `config`, `checkpoints`, `start_finish_line`, `finish_line`, `racers`, `racer_states`.
 
 `racer_states` schema: `{ racer_node(KEY) : { "lap": int(1-based), "next_checkpoint": int, "finished": bool } }`.
 
 HUD contract: `RaceHUD.bind(manager)` is its only entry point — the manager calls the HUD, the HUD never looks up the manager; it filters manager signals with `racer == manager.get_player()`.
-Clock: `elapsed_time` accumulates delta in `RaceManager._process` only while `race_running`; on the first finish `race_running=false` and `finish_time=elapsed_time`; both reset in `_race_start()`.
-`get_player()` = racer in group `player_car`, else `racers[0]`. `get_player_progress()` = `{ lap (1-based, clamped to total_laps), total_laps, checkpoints_done (per lap, resets each lap), checkpoints_total, finished }`.
+Clock: `elapsed_time` accumulates delta in `RaceManager._process` only while `race_running`; the clock starts only after `countdown_seconds`, so grid settle time is excluded; on the first finish `race_running=false` and `finish_time=elapsed_time`.
+`get_player()` = racer in group `player_car`, else `racers[0]`. `get_player_progress()` = `{ is_sprint, lap (1-based, clamped to total_laps), total_laps, checkpoints_done (per lap; whole race in a sprint), checkpoints_total, finished }`.
 
-Lap rules: a crossing counts only if `next_checkpoint == checkpoints.size()`; then `next_checkpoint = 0`, `lap += 1`, and only afterwards is `lap_completed(racer, completed_lap)` emitted — **state is fully mutated before signals fire**, because listeners (HUD, standings) read `racer_states` inside the handler; race ends when `lap > total_laps`.
+Lap rules (CIRCUIT/TIME_ATTACK): a crossing counts only if `next_checkpoint == checkpoints.size()`; then `next_checkpoint = 0`, `lap += 1`, and only afterwards is `lap_completed(racer, completed_lap)` emitted — **state is fully mutated before signals fire**, because listeners (HUD, standings) read `racer_states` inside the handler; race ends when `lap > total_laps`.
+
+Sprint rules: crossing `StartFinishLine` does nothing (the clock already runs from GO); `FinishLine` finishes a racer only when `next_checkpoint == checkpoints.size()`, so corners cannot be cut; `total_laps` is ignored and the HUD hides its lap label.
+
+Track shape is type-checked: sprint tracks must contain a `FinishLine`, lap tracks must not — `_validate_track()` push_errors otherwise. `_finish_racer()` is the shared finish path (freeze clock, mark finished, emit `race_finished`).
 
 Extension hooks: any new race node type must be added inside `_find_race_nodes()`; new per-racer data belongs in `racer_states`.
 
@@ -103,9 +115,10 @@ Extension hooks: any new race node type must be added inside `_find_race_nodes()
 3. Adding children during `_ready` must be `call_deferred()` (existing pattern in `spawn_racers`).
 4. Style: GDScript with tabs, typed params/returns, `snake_case`, `##` doc comments on exported resources and non-obvious functions, `print()` for race telemetry (existing convention: prefix `RaceManager:` / `Camera`).
 5. Exported properties are serialized in `.tscn` — renaming/removing one requires updating every scene that sets it (`car_base_a.tscn` uses `node_paths=...` for `speed_label`).
-6. Test by running `res://Scenes/race_template.tscn`; console must show `RaceManager: registered N checkpoint(s)…`, `RaceHUD: bound to <manager>` (wiring smoke test) and `spawned N racer(s)`.
+6. Test by running `res://Scenes/race_menu.tscn` (main scene) and pressing Start Race; console must show `RaceMenu: starting <venue> / <track>`, then `RaceManager: registered N checkpoint(s)`, `RaceHUD: bound to <manager>`, `RaceSession: <venue> / <track> - <type>, N lap(s), N car(s)`, `RaceManager: countdown`, `RaceManager: spawned N racer(s)`, `Camera: following <car>`. A sprint adds `Racer <name>: finish line crossed with N/N checkpoints`.
 7. Do not restructure folders, rename scenes, or change what is vs. isn't scene-scoped without an explicit request.
 8. **UI:** build with `Control` + anchors/containers, never absolute pixel offsets; layouts must hold at 4:3, 16:9 and ultrawide (project uses stretch aspect `expand`, so do not assume letterboxing).
+9. **Explain before you specify:** for design/architecture questions, answer in plain language first — what the thing does, what it costs, what it means for the game — using concrete analogies. File paths, node names and code go in a short follow-up section, not the opener. The user finds code-first answers hard to read. Keep the code-first register for actual implementation work.
 
 ---
 
@@ -118,21 +131,20 @@ The other ~91 actions are stock Godot `ui_*` defaults — do not hand-edit them.
 
 ## 8. Known issues / tech debt
 
-1. **Input mismatch:** `car_drive.gd` reads `ui_up/ui_down/ui_left/ui_right/ui_select`; the dedicated `drive_*` actions are unused, so driving shares bindings with UI navigation (menus will conflict). Fix: switch the car to `drive_*` and keep `ui_*` for UI.
-2. `Scenes/race_template.tscn` → `Camera3D.target_path` = `"../VehicleBody3D"` is stale (spawned cars are children of `race_root`); camera only works via the `player_car` group fallback in `camera_follow.gd`, which also contains a 5-frame `await` poll loop and a `car_base_a*` name-prefix fallback.
-3. `race_template.tscn` has a single `Marker3D` in `spawn_markers` → exactly one racer; no AI opponents exist yet.
-4. `race_finished` is emitted only for the first finisher; later finishers never get a re-emitted/updated standings payload, and standings rank by `finished`/`lap`/`next_checkpoint` only — no lap times or finish order timestamps.
-5. `start_finish_line.gd` has a duplicated comment on lines 4–5 (cosmetic).
-6. `checkpoint_index` is hand-assigned per instance and must stay contiguous from 0; nothing validates gaps or duplicates (`Checkpoint` in `race_template` relies on the default `0`).
-7. HUD reads only the **player** racer (`get_player_progress()`); per-racer standings and lap times stay console-only. Clock starts in `RaceManager._ready()` via `_race_start()`, one frame before the car is spawned (`spawn_racers.call_deferred`), so `elapsed_time` includes that latency.
-8. Single car model (`car_base_a.tscn`) with hardcoded exports; parts/upgrades from `Design.md` have no runtime data layer.
+1. `Camera3D` never searches the tree: `RaceSession._on_racers_spawned()` calls `camera_follow.follow(player)`. `Scenes/test_drive2.tscn` instances `car_base_a` outside a race, so that car is not in `player_car` and its speedometer is removed — cosmetic, scratch scene only.
+2. Opponents spawn but have no AI controller: they sit on the grid, since nothing writes `steer_input`/`throttle_input` for them yet.
+3. `race_finished` is emitted only for the first finisher; later finishers never get an updated standings payload, and standings rank by `finished`/`lap`/`next_checkpoint` only — no lap times or finish order timestamps.
+4. `start_finish_line.gd` has a duplicated comment on lines 4–5 (cosmetic).
+5. HUD reads only the **player** racer; per-racer standings stay console-only. A race blocks forever if a car never finishes (`race_running` stays true, clock keeps running).
+6. Single car model with hardcoded exports; parts/upgrades from `Design.md` have no runtime data layer.
+7. Time attack is "circuit with 0 opponents": no per-lap times, no best-lap result yet.
 
 ---
 
 ## 9. Where new systems plug in (from Design.md)
 
 - AI opponents → per-car controller that writes `steer_input/throttle_input/brake_input`; add `Marker3D`s to `StartFinishLine.spawn_markers`.
-- Race types (circuit/sprint/time attack) → new fields on `RaceManager` + branch in lap/finish logic.
+- Race types: CIRCUIT and SPRINT implemented (`FinishLine` gate + `_is_sprint()` branch); TIME_ATTACK reuses the circuit path with `opponent_count` forced to 0.
 - Car parts/upgrades → stat block applied to `car_base_a` exports (`max_engine_force`, wheel grip, etc.) at spawn time.
 - Crate → `Area3D` prefab + `class_name`, discovered/wired by `RaceManager` alongside gates.
 - Career/save/garage → not implemented; garage/shop will be separate scenes, state scoping decided when built. `RaceManager` stays race-only.

@@ -1,0 +1,40 @@
+[gd_scene load_steps=8 format=4 uid="uid://0txiole8x7i8"]
+
+[ext_resource type="Script" path="res://Scripts/racing/race_session.gd" id="1_session"]
+[ext_resource type="Script" uid="uid://b377jtn5lao31" path="res://Scripts/racing/race_manager.gd" id="2_manager"]
+[ext_resource type="Script" uid="uid://cpej4s3b3wgck" path="res://Scripts/camera_follow.gd" id="3_camera"]
+[ext_resource type="PackedScene" path="res://Scripts/racing/race_hud.tscn" id="4_hud"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+sky = SubResource("Sky_main")
+
+[node name="race_root" type="Node3D"]
+script = ExtResource("1_session")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(-0.7147131, 0.63498765, -0.29321644, 0, 0.41922933, 0.90788037, 0.69941777, 0.648874, -0.2996287, -3.416971, 1.9089091, -1.4448309)
+shadow_enabled = true
+
+[node name="VenueHolder" type="Node3D" parent="."]
+
+[node name="TrackHolder" type="Node3D" parent="."]
+
+[node name="Racers" type="Node3D" parent="."]
+
+[node name="RaceManager" type="Node" parent="."]
+script = ExtResource("2_manager")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.93905985, 0.34375373, 0, -0.34375373, 0.93905985, 0, 1.5116602, 2.7980125)
+script = ExtResource("3_camera")
+
+[node name="RaceHUD" parent="." instance=ExtResource("4_hud")]

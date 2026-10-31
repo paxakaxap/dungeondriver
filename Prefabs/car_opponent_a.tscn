@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=4]
+
+[ext_resource type="PackedScene" uid="uid://ca77lrg4iq2sa" path="res://Prefabs/car_base_a.tscn" id="1_carbase"]
+
+[node name="car_opponent_a" instance=ExtResource("1_carbase")]

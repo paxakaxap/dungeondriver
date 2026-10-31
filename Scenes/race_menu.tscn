@@ -1,0 +1,128 @@
+[gd_scene load_steps=2 format=4]
+
+[ext_resource type="Script" path="res://Scripts/racing/race_menu.gd" id="1_menu"]
+
+[node name="race_menu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.07, 0.09, 1)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "Quick Race"
+
+[node name="VenueRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="VenueLabel" type="Label" parent="Center/Panel/Margin/VBox/VenueRow"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Venue"
+
+[node name="VenueOption" type="OptionButton" parent="Center/Panel/Margin/VBox/VenueRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TrackRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TrackLabel" type="Label" parent="Center/Panel/Margin/VBox/TrackRow"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Track"
+
+[node name="TrackOption" type="OptionButton" parent="Center/Panel/Margin/VBox/TrackRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TypeRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TypeLabel" type="Label" parent="Center/Panel/Margin/VBox/TypeRow"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Race Type"
+
+[node name="TypeOption" type="OptionButton" parent="Center/Panel/Margin/VBox/TypeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LapsRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="LapsLabel" type="Label" parent="Center/Panel/Margin/VBox/LapsRow"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Laps"
+
+[node name="LapsSpin" type="SpinBox" parent="Center/Panel/Margin/VBox/LapsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 20.0
+value = 3.0
+
+[node name="OpponentsRow" type="HBoxContainer" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="OpponentsLabel" type="Label" parent="Center/Panel/Margin/VBox/OpponentsRow"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Opponents"
+
+[node name="OpponentsSpin" type="SpinBox" parent="Center/Panel/Margin/VBox/OpponentsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 7.0
+value = 2.0
+
+[node name="Hint" type="Label" parent="Center/Panel/Margin/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "Esc during a race brings you back here"
+
+[node name="StartButton" type="Button" parent="Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Start Race"

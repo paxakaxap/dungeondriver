@@ -77,7 +77,10 @@ func _refresh_progress() -> void:
 	if not _manager:
 		return
 	var progress: Dictionary = _manager.get_player_progress()
+	var sprint := bool(progress.get("is_sprint", false))
 	if _lap_label:
+		# A sprint is point-to-point, so there is no lap to count.
+		_lap_label.visible = not sprint
 		_set_label(_lap_label, "Lap %d/%d" % [progress["lap"], progress["total_laps"]])
 	if _checkpoint_label:
 		_set_label(_checkpoint_label, "Checkpoints: %d/%d" % [
